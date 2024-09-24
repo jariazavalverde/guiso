@@ -1,2 +1,2 @@
-pub mod poly;
 pub mod graph;
+pub mod poly;
