@@ -1,11 +1,9 @@
-pub struct Graph<T, const N: usize> {
-    matrix: [[T; N]; N],
+pub struct Graph<T> {
+    matrix: Vec<T>,
 }
 
-impl<T, const N: usize> Graph<T, N> {
-
-    pub fn from_array(matrix: [[T; N]; N]) -> Self {
-        Graph { matrix }
+impl<T> Graph<T> {
+    pub fn from_array<const N: usize>(matrix: [[T; N]; N]) -> Self {
+        todo!();
     }
-
 }
