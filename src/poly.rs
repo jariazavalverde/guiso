@@ -5,7 +5,6 @@ pub struct Poly<T> {
 }
 
 impl<T> Poly<T> {
-
     /// Returns the coefficient of the monomial with the given degree.
     ///
     /// # Examples
@@ -133,8 +132,7 @@ where
     }
 }
 
-impl<T> Into<Vec<T>> for Poly<T>
-{
+impl<T> Into<Vec<T>> for Poly<T> {
     /// Returns the coefficients of the monomials as a vector.
     ///
     /// # Examples
