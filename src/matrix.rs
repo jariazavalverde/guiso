@@ -1,6 +1,13 @@
 use crate::identity;
 use std::ops;
 
+#[macro_export]
+macro_rules! matrix {
+    ($($($elem:expr),*);*) => {
+        Matrix::from([$([$($elem),*]),*])
+    };
+}
+
 pub struct Matrix<T> {
     matrix: Vec<T>,
     order: usize,
@@ -93,14 +100,14 @@ impl<T> From<(Vec<T>, usize)> for Matrix<T>
 where
     T: Clone,
 {
-    /// Makes a new matrix from an array.
+    /// Makes a new matrix from a vector.
     ///
     /// # Examples
     ///
     /// ```
     /// use guiso::matrix::Matrix;
     ///
-    /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
+    /// let i3: Matrix<u8> = Matrix::from((vec![1,0,0,0,1,0,0,0,1], 3));
     /// ```
     fn from(v: (Vec<T>, usize)) -> Self {
         let (matrix, order) = v;

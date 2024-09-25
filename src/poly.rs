@@ -1,6 +1,31 @@
 use crate::identity;
 use std::{cmp, fmt, ops};
 
+macro_rules! num_identity {
+    ($type:ident) => {
+        impl AddIdentity<$type> for $type {
+            #[inline(always)]
+            fn zero() -> $type {
+                0 as $type
+            }
+        }
+
+        impl MulIdentity<$type> for $type {
+            #[inline(always)]
+            fn one() -> $type {
+                1 as $type
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! poly {
+    ($($data:expr),*) => {
+        Poly::from(vec![$($data),*])
+    };
+}
+
 pub struct Poly<T> {
     coeff: Vec<T>,
 }
@@ -68,29 +93,19 @@ where
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let default: T = T::default();
         let degree: usize = self.degree();
-        let mut r: Result<(), fmt::Error>;
         for (index, coeff) in self.coeff.iter().rev().enumerate() {
             let exp: usize = degree - index;
             // do not display null coefficients unless degree of polynomial is zero
             if *coeff != default || degree == 0 {
                 // display plus sign if coefficient is positive and it is not the first monomial
                 if *coeff > default && exp < degree {
-                    r = write!(f, "+");
-                    if r.is_err() {
-                        return r;
-                    }
+                    write!(f, "+")?;
                 }
                 // display coefficient
-                r = write!(f, "{coeff}");
-                if r.is_err() {
-                    return r;
-                }
+                write!(f, "{coeff}")?;
                 // display exponent if it is not the term independent
                 if exp != 0 {
-                    r = write!(f, "x^{exp}");
-                    if r.is_err() {
-                        return r;
-                    }
+                    write!(f, "x^{exp}")?;
                 }
             }
         }
@@ -253,7 +268,7 @@ where
     T: identity::AddIdentity<T> + PartialEq<T>,
 {
     fn zero() -> Poly<T> {
-        Poly::from(vec![T::zero()])
+        poly![T::zero()]
     }
 }
 
@@ -264,6 +279,6 @@ where
     T: identity::MulIdentity<T>,
 {
     fn one() -> Poly<T> {
-        Poly::from(vec![T::one()])
+        poly![T::one()]
     }
 }
