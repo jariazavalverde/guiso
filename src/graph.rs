@@ -1,32 +1,16 @@
+use crate::matrix::Matrix;
+
 pub struct Graph<T> {
-    matrix: Vec<T>,
-    vertices: usize,
+    matrix: Matrix<T>,
 }
 
-impl<T> Graph<T> {
-    /// Returns the ij-entry of the adjacency matrix.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use guiso::graph::Graph;
-    ///
-    /// let g: Graph<u8> = Graph::from([[1,0,0],[0,1,0],[0,0,1]]);
-    ///
-    /// assert_eq!(1, *g.get(0, 0));
-    /// assert_eq!(1, *g.get(1, 1));
-    /// assert_eq!(0, *g.get(2, 0));
-    /// ```
-    pub fn get(&self, row: usize, col: usize) -> &T {
-        &self.matrix[row * self.vertices + col]
-    }
-}
+impl<T> Graph<T> {}
 
 impl<const V: usize, T> From<[[T; V]; V]> for Graph<T>
 where
     T: Clone,
 {
-    /// Makes a new graph from a matrix.
+    /// Makes a new graph from an array.
     ///
     /// # Examples
     ///
@@ -36,13 +20,25 @@ where
     /// let g: Graph<u8> = Graph::from([[1,0,0],[0,1,0],[0,0,1]]);
     /// ```
     fn from(arr: [[T; V]; V]) -> Self {
-        let mut matrix: Vec<T> = Vec::new();
-        for i in 0..V {
-            matrix.extend_from_slice(&arr[i]);
-        }
         Graph {
-            matrix,
-            vertices: V,
+            matrix: Matrix::from(arr),
         }
+    }
+}
+
+impl<T> From<Matrix<T>> for Graph<T> {
+    /// Makes a new graph from a matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix::Matrix;
+    /// use guiso::graph::Graph;
+    ///
+    /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
+    /// let g: Graph<u8> = Graph::from(i3);
+    /// ```
+    fn from(matrix: Matrix<T>) -> Self {
+        Graph { matrix }
     }
 }
