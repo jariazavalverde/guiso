@@ -1,9 +1,11 @@
+use crate::identity;
+
 pub struct Matrix<T> {
     matrix: Vec<T>,
     order: usize,
 }
 
-impl Matrix<u8> {
+impl<T> Matrix<T> {
     /// Makes the identity matrix of the given order.
     ///
     /// # Examples
@@ -13,18 +15,19 @@ impl Matrix<u8> {
     ///
     /// let i3: Matrix<u8> = Matrix::identity(3);
     /// ```
-    pub fn identity(order: usize) -> Matrix<u8> {
-        let mut matrix: Vec<u8> = Vec::with_capacity(order * order);
+    pub fn identity(order: usize) -> Matrix<T>
+    where
+        T: identity::AddIdentity<T> + identity::MulIdentity<T>,
+    {
+        let mut matrix: Vec<T> = Vec::with_capacity(order * order);
         for i in 0..order {
             for j in 0..order {
-                matrix.push(if i == j { 1 } else { 0 });
+                matrix.push(if i == j { T::one() } else { T::zero() });
             }
         }
         Matrix { matrix, order }
     }
-}
 
-impl<T> Matrix<T> {
     /// Returns the order of the matrix.
     ///
     /// # Examples

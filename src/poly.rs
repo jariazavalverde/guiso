@@ -1,3 +1,4 @@
+use crate::identity;
 use std::{cmp, fmt, ops};
 
 pub struct Poly<T> {
@@ -13,22 +14,15 @@ impl<T> Poly<T> {
     /// use guiso::poly::Poly;
     ///
     /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
-    /// let q: Poly<i32> = Poly::from(vec![1, 2, 4]);
+    /// let q: Poly<i32> = Poly::from(vec![1, 2, 4, 0]);
+    /// let r: Poly<i32> = Poly::from(vec![1, 2, 4]);
     ///
-    /// assert_eq!(6, p.get(3));
-    /// assert_eq!(0, q.get(3));
+    /// assert_eq!(Some(&6), p.get(3));
+    /// assert_eq!(None, q.get(3));
+    /// assert_eq!(None, r.get(3));
     /// ```
-    pub fn get(&self, index: usize) -> T
-    where
-        T: Copy,
-        T: Default,
-    {
-        let default: T = T::default();
-        if self.coeff.len() <= index {
-            default
-        } else {
-            self.coeff[index]
-        }
+    pub fn get(&self, index: usize) -> Option<&T> {
+        self.coeff.get(index)
     }
 
     /// Returns the degree of the polynomial.
@@ -106,8 +100,8 @@ where
 
 impl<T> From<Vec<T>> for Poly<T>
 where
-    T: Default,
     T: PartialEq<T>,
+    T: identity::AddIdentity<T>,
 {
     /// Makes a new polynomial from a vector.
     ///
@@ -119,7 +113,7 @@ where
     /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
     /// ```
     fn from(mut coeff: Vec<T>) -> Self {
-        let default: T = T::default();
+        let default: T = T::zero();
         if coeff.is_empty() {
             return Poly {
                 coeff: vec![default],
@@ -156,9 +150,9 @@ impl<T> Into<Vec<T>> for Poly<T> {
 impl<'a, T> ops::Add for &'a Poly<T>
 where
     T: Copy,
-    T: Default,
     T: PartialEq<T>,
     T: ops::Add<Output = T>,
+    T: identity::AddIdentity<T>,
 {
     type Output = Poly<T>;
 
@@ -177,10 +171,22 @@ where
     /// assert_eq!(vec![6, 5, 4, 6], v);
     /// ```
     fn add(self, p: Self) -> Self::Output {
-        let size: usize = cmp::max(self.coeff.len(), p.coeff.len());
-        let mut coeff: Vec<T> = Vec::new();
-        for index in 0..size {
-            coeff.push(self.get(index) + p.get(index));
+        let greater: &Poly<T>;
+        let smaller: &Poly<T>;
+        if self.degree() >= p.degree() {
+            greater = self;
+            smaller = p;
+        } else {
+            greater = p;
+            smaller = self;
+        }
+        let size: usize = cmp::max(greater.coeff.len(), smaller.coeff.len());
+        let mut coeff: Vec<T> = Vec::with_capacity(size);
+        for index in 0..greater.coeff.len() {
+            coeff.push(greater[index]);
+        }
+        for index in 0..smaller.coeff.len() {
+            coeff[index] = coeff[index] + smaller[index];
         }
         Poly::from(coeff)
     }
@@ -189,10 +195,10 @@ where
 impl<'a, T> ops::Mul for &'a Poly<T>
 where
     T: Copy,
-    T: Default,
     T: PartialEq<T>,
     T: ops::Add<Output = T>,
     T: ops::Mul<Output = T>,
+    T: identity::AddIdentity<T>,
 {
     type Output = Poly<T>;
 
@@ -212,7 +218,7 @@ where
     /// ```
     fn mul(self, p: Self) -> Self::Output {
         let size: usize = self.coeff.len() * p.coeff.len();
-        let mut coeff: Vec<T> = vec![T::default(); size];
+        let mut coeff: Vec<T> = vec![T::zero(); size];
         for (index1, coeff1) in self.coeff.iter().enumerate() {
             for (index2, coeff2) in p.coeff.iter().enumerate() {
                 let exp: usize = index1 + index2;
@@ -220,5 +226,32 @@ where
             }
         }
         Poly::from(coeff)
+    }
+}
+
+impl<T> ops::Index<usize> for Poly<T> {
+    type Output = T;
+    fn index(&self, index: usize) -> &Self::Output {
+        &self.coeff[index]
+    }
+}
+
+impl<T> identity::AddIdentity<Poly<T>> for Poly<T>
+where
+    T: identity::AddIdentity<T> + PartialEq<T>,
+{
+    fn zero() -> Poly<T> {
+        Poly::from(vec![T::zero()])
+    }
+}
+
+impl<T> identity::MulIdentity<Poly<T>> for Poly<T>
+where
+    T: PartialEq<T>,
+    T: identity::AddIdentity<T>,
+    T: identity::MulIdentity<T>,
+{
+    fn one() -> Poly<T> {
+        Poly::from(vec![T::one()])
     }
 }
