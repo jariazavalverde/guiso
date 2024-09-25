@@ -231,6 +231,18 @@ where
 
 impl<T> ops::Index<usize> for Poly<T> {
     type Output = T;
+
+    /// Returns the coefficient of the monomial with the given degree.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    ///
+    /// assert_eq!(6, p[3]);
+    /// ```
     fn index(&self, index: usize) -> &Self::Output {
         &self.coeff[index]
     }

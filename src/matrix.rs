@@ -1,4 +1,5 @@
 use crate::identity;
+use std::ops;
 
 pub struct Matrix<T> {
     matrix: Vec<T>,
@@ -85,5 +86,52 @@ where
             matrix.extend_from_slice(&arr[i]);
         }
         Matrix { matrix, order: N }
+    }
+}
+
+impl<T> From<(Vec<T>, usize)> for Matrix<T>
+where
+    T: Clone,
+{
+    /// Makes a new matrix from an array.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
+    /// ```
+    fn from(v: (Vec<T>, usize)) -> Self {
+        let (matrix, order) = v;
+        if matrix.len() == order * order {
+            Matrix { matrix, order }
+        } else {
+            Matrix {
+                matrix: Vec::new(),
+                order: 0,
+            }
+        }
+    }
+}
+
+impl<T> ops::Index<(usize, usize)> for Matrix<T> {
+    type Output = T;
+
+    /// Returns the ij-entry from the matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let i3: Matrix<u8> = Matrix::identity(3);
+    ///
+    /// assert_eq!(1, i3[(0, 0)]);
+    /// assert_eq!(0, i3[(1, 2)]);
+    /// ```
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        let (row, col) = index;
+        &self.matrix[row * self.order() + col]
     }
 }
