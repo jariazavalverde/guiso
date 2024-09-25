@@ -1,24 +1,6 @@
 use crate::identity;
 use std::{cmp, fmt, ops};
 
-macro_rules! num_identity {
-    ($type:ident) => {
-        impl AddIdentity<$type> for $type {
-            #[inline(always)]
-            fn zero() -> $type {
-                0 as $type
-            }
-        }
-
-        impl MulIdentity<$type> for $type {
-            #[inline(always)]
-            fn one() -> $type {
-                1 as $type
-            }
-        }
-    };
-}
-
 #[macro_export]
 macro_rules! poly {
     ($($data:expr),*) => {
@@ -26,6 +8,7 @@ macro_rules! poly {
     };
 }
 
+#[derive(Debug)]
 pub struct Poly<T> {
     coeff: Vec<T>,
 }
@@ -263,6 +246,23 @@ impl<T> ops::Index<usize> for Poly<T> {
     }
 }
 
+impl<T> cmp::PartialEq<Poly<T>> for Poly<T>
+where
+    T: PartialEq<T>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        if self.coeff.len() != other.coeff.len() {
+            return false;
+        }
+        for i in 0..self.coeff.len() {
+            if self[i] != other[i] {
+                return false;
+            }
+        }
+        true
+    }
+}
+
 impl<T> identity::AddIdentity<Poly<T>> for Poly<T>
 where
     T: identity::AddIdentity<T> + PartialEq<T>,
@@ -280,5 +280,64 @@ where
 {
     fn one() -> Poly<T> {
         poly![T::one()]
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Polynomials never should be empty.
+    #[test]
+    fn poly_non_empty() {
+        let empty: Poly<i32> = poly![];
+        let non_empty: Poly<i32> = poly![1, 2, 3];
+        assert_ne!(0, empty.coeff.len());
+        assert_ne!(0, non_empty.coeff.len());
+    }
+
+    // Last coefficient of a polynomial never should be zero unless polynomial is null.
+    #[test]
+    fn poly_last_monomial_non_zero() {
+        let empty: Poly<i32> = poly![];
+        let non_empty: Poly<i32> = poly![1, 2, 3, 0, 0, 0];
+        assert_eq!(0, empty[empty.coeff.len() - 1]);
+        assert_ne!(0, non_empty[non_empty.coeff.len() - 1]);
+    }
+
+    // Addition should be commutative for polynomials with coefficients in a ring.
+    #[test]
+    fn poly_add_commutativity() {
+        let p: Poly<i32> = poly![1, -3, 0, 4, -2];
+        let q: Poly<i32> = poly![8, 0, -1, -2];
+        assert_eq!(&p + &q, &q + &p);
+    }
+
+    // Addition should be associative for polynomials with coefficients in a ring.
+    #[test]
+    fn poly_add_associativity() {
+        let p: Poly<i32> = poly![1, -3, 0, 4, -2];
+        let q: Poly<i32> = poly![8, 0, -1, -2];
+        let r: Poly<i32> = poly![1, 0, 0, -4, 2];
+        assert_eq!(&p + &(&q + &r), &(&p + &q) + &r);
+    }
+
+    // Multiplication should be associative for polynomials with coefficients in a ring.
+    #[test]
+    fn poly_mul_associativity() {
+        let p: Poly<i32> = poly![1, -3, 0, 4, -2];
+        let q: Poly<i32> = poly![8, 0, -1, -2];
+        let r: Poly<i32> = poly![1, 0, 0, -4, 2];
+        assert_eq!(&p * &(&q * &r), &(&p * &q) * &r);
+    }
+
+    // Multiplication should be distributive w.r.t. addition for polynomials with coefficients in a ring.
+    #[test]
+    fn poly_mul_distributivity() {
+        let p: Poly<i32> = poly![1, -3, 0, 4, -2];
+        let q: Poly<i32> = poly![8, 0, -1, -2];
+        let r: Poly<i32> = poly![1, 0, 0, -4, 2];
+        assert_eq!(&p * &(&q + &r), &(&p * &q) + &(&p * &r));
+        assert_eq!(&(&q + &r) * &p, &(&q * &p) + &(&r * &p));
     }
 }
