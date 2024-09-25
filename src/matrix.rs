@@ -184,14 +184,14 @@ where
     /// assert_eq!(c, &a * &b);
     /// ```
     fn mul(self, rhs: Self) -> Self::Output {
-        if self.order() != rhs.order() {
+        if self.order != rhs.order {
             panic!("Cannot multiply matrices with incompatible dimensions.");
         }
         let mut matrix: Vec<T> = Vec::with_capacity(self.matrix.len());
         for i in 0..self.order {
             for j in 0..self.order {
                 let mut sum = T::zero();
-                for k in 0..self.order() {
+                for k in 0..self.order {
                     sum = sum + &self[(i, k)] * &rhs[(k, j)];
                 }
                 matrix.push(sum);
@@ -221,7 +221,7 @@ impl<T> ops::Index<(usize, usize)> for Matrix<T> {
     /// ```
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         let (row, col) = index;
-        &self.matrix[row * self.order() + col]
+        &self.matrix[row * self.order + col]
     }
 }
 

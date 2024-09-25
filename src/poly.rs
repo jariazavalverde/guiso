@@ -81,7 +81,7 @@ impl<T> Poly<T> {
 impl<T> fmt::Display for Poly<T>
 where
     T: fmt::Display,
-    T: Default,
+    T: identity::AddIdentity<T>,
     T: PartialOrd<T>,
 {
     /// Formats the polynomial using the given formatter.
@@ -100,14 +100,14 @@ where
     /// assert_eq!("0", format!("{r}"));
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let default: T = T::default();
+        let zero: T = T::zero();
         let degree: usize = self.degree();
         for (index, coeff) in self.coeff.iter().rev().enumerate() {
             let exp: usize = degree - index;
             // do not display null coefficients unless degree of polynomial is zero
-            if *coeff != default || degree == 0 {
+            if *coeff != zero || degree == 0 {
                 // display plus sign if coefficient is positive and it is not the first monomial
-                if *coeff > default && exp < degree {
+                if *coeff > zero && exp < degree {
                     write!(f, "+")?;
                 }
                 // display coefficient
@@ -137,13 +137,11 @@ where
     /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
     /// ```
     fn from(mut coeff: Vec<T>) -> Self {
-        let default: T = T::zero();
+        let zero: T = T::zero();
         if coeff.is_empty() {
-            return Poly {
-                coeff: vec![default],
-            };
+            return Poly { coeff: vec![zero] };
         }
-        while coeff.len() > 1 && coeff[coeff.len() - 1] == default {
+        while coeff.len() > 1 && coeff[coeff.len() - 1] == zero {
             coeff.pop();
         }
         Poly { coeff }
