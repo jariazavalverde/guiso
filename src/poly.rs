@@ -50,6 +50,32 @@ impl<T> Poly<T> {
     pub fn degree(&self) -> usize {
         self.coeff.len() - 1
     }
+
+    /// Returns the product of a scalar and a polynomial.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    /// let q: Poly<i32> = Poly::from(vec![5, 10, 20, 30]);
+    ///
+    /// assert_eq!(q, p.scalar(5));
+    /// ```
+    pub fn scalar(&self, scalar: T) -> Self
+    where
+        T: Copy,
+        T: PartialEq<T>,
+        T: ops::Mul<T, Output = T>,
+        T: identity::AddIdentity<T>,
+    {
+        let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
+        for elem in self.coeff.iter() {
+            coeff.push(scalar * *elem);
+        }
+        Poly::from(coeff)
+    }
 }
 
 impl<T> fmt::Display for Poly<T>
@@ -145,11 +171,11 @@ impl<T> Into<Vec<T>> for Poly<T> {
     }
 }
 
-impl<'a, T> ops::Add for &'a Poly<T>
+impl<'a, T> ops::Add<&'a Poly<T>> for &'a Poly<T>
 where
     T: Copy,
     T: PartialEq<T>,
-    T: ops::Add<Output = T>,
+    T: ops::Add<T, Output = T>,
     T: identity::AddIdentity<T>,
 {
     type Output = Poly<T>;
@@ -190,12 +216,12 @@ where
     }
 }
 
-impl<'a, T> ops::Mul for &'a Poly<T>
+impl<'a, T> ops::Mul<&'a Poly<T>> for &'a Poly<T>
 where
     T: Copy,
     T: PartialEq<T>,
-    T: ops::Add<Output = T>,
-    T: ops::Mul<Output = T>,
+    T: ops::Add<T, Output = T>,
+    T: ops::Mul<T, Output = T>,
     T: identity::AddIdentity<T>,
 {
     type Output = Poly<T>;
@@ -222,6 +248,36 @@ where
                 let exp: usize = index1 + index2;
                 coeff[exp] = coeff[exp] + *coeff1 * *coeff2;
             }
+        }
+        Poly::from(coeff)
+    }
+}
+
+impl<'a, T> ops::Mul<T> for &'a Poly<T>
+where
+    T: Copy,
+    T: PartialEq<T>,
+    T: ops::Mul<T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Poly<T>;
+
+    /// Returns the product of a polynomial and a scalar.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    /// let q: Poly<i32> = Poly::from(vec![5, 10, 20, 30]);
+    ///
+    /// assert_eq!(q, &p * 5);
+    /// ```
+    fn mul(self, scalar: T) -> Self::Output {
+        let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
+        for elem in self.coeff.iter() {
+            coeff.push(*elem * scalar);
         }
         Poly::from(coeff)
     }
