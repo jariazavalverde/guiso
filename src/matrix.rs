@@ -1,5 +1,5 @@
 use crate::identity;
-use std::ops;
+use std::{cmp, ops};
 
 #[macro_export]
 macro_rules! matrix {
@@ -8,6 +8,7 @@ macro_rules! matrix {
     };
 }
 
+#[derive(Debug)]
 pub struct Matrix<T> {
     matrix: Vec<T>,
     order: usize,
@@ -122,6 +123,87 @@ where
     }
 }
 
+impl<'a, T> ops::Add<&'a Matrix<T>> for &'a Matrix<T>
+where
+    T: PartialEq<T>,
+    &'a T: ops::Add<&'a T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Matrix<T>;
+
+    /// Returns the sum of two matrices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let a: Matrix<u8> = matrix![1,0,2; 1,2,1; 2,1,1];
+    /// let b: Matrix<u8> = matrix![0,2,1; 1,0,1; 1,1,0];
+    /// let c: Matrix<u8> = matrix![1,2,3; 2,2,2; 3,2,1];
+    ///
+    /// assert_eq!(c, &a + &b);
+    /// ```
+    fn add(self, rhs: Self) -> Self::Output {
+        if self.order() != rhs.order() {
+            panic!("Cannot add matrices with incompatible dimensions.");
+        }
+        let mut matrix: Vec<T> = Vec::with_capacity(self.matrix.len());
+        for i in 0..self.matrix.len() {
+            matrix.push(&self.matrix[i] + &rhs.matrix[i]);
+        }
+        Matrix {
+            matrix,
+            order: self.order,
+        }
+    }
+}
+
+impl<'a, T> ops::Mul<&'a Matrix<T>> for &'a Matrix<T>
+where
+    T: PartialEq<T>,
+    T: ops::Add<T, Output = T>,
+    &'a T: ops::Mul<&'a T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Matrix<T>;
+
+    /// Returns the product of two matrices.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let a: Matrix<u8> = matrix![1,0,2; 1,2,1; 2,1,1];
+    /// let b: Matrix<u8> = matrix![0,2,1; 1,0,1; 1,1,0];
+    /// let c: Matrix<u8> = matrix![2,4,1; 3,3,3; 2,5,3];
+    ///
+    /// assert_eq!(c, &a * &b);
+    /// ```
+    fn mul(self, rhs: Self) -> Self::Output {
+        if self.order() != rhs.order() {
+            panic!("Cannot multiply matrices with incompatible dimensions.");
+        }
+        let mut matrix: Vec<T> = Vec::with_capacity(self.matrix.len());
+        for i in 0..self.order {
+            for j in 0..self.order {
+                let mut sum = T::zero();
+                for k in 0..self.order() {
+                    sum = sum + &self[(i, k)] * &rhs[(k, j)];
+                }
+                matrix.push(sum);
+            }
+        }
+        Matrix {
+            matrix,
+            order: self.order,
+        }
+    }
+}
+
 impl<T> ops::Index<(usize, usize)> for Matrix<T> {
     type Output = T;
 
@@ -140,5 +222,22 @@ impl<T> ops::Index<(usize, usize)> for Matrix<T> {
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         let (row, col) = index;
         &self.matrix[row * self.order() + col]
+    }
+}
+
+impl<T> cmp::PartialEq<Matrix<T>> for Matrix<T>
+where
+    T: PartialEq<T>,
+{
+    fn eq(&self, other: &Self) -> bool {
+        if self.order != other.order {
+            return false;
+        }
+        for i in 0..self.matrix.len() {
+            if self.matrix[i] != other.matrix[i] {
+                return false;
+            }
+        }
+        true
     }
 }
