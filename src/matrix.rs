@@ -101,7 +101,7 @@ impl<T> Matrix<T> {
     ///
     /// ```
     /// use guiso::matrix;
-    /// use guiso::matrix::Matrix;
+    /// use guiso::matrix::{Matrix};
     ///
     /// let i3: Matrix<i32> = Matrix::identity(3);
     /// let a: Matrix<i32> = matrix![1,1,1; 2,1,2; 1,2,4];
@@ -117,7 +117,7 @@ impl<T> Matrix<T> {
         for<'b> &'b T: ops::Add<&'b T, Output = T>,
         for<'b> &'b T: ops::Mul<&'b T, Output = T>,
     {
-        self.matrix_ref().det_ref()
+        self.as_ref().det_ref()
     }
 
     pub fn map<F, S>(&self, f: F) -> Matrix<S>
@@ -134,7 +134,21 @@ impl<T> Matrix<T> {
         }
     }
 
-    pub fn matrix_ref(&self) -> Matrix<&T> {
+    /// Converts from `&Matrix<T>` to `Matrix<&T>`.
+    /// 
+    /// # Examples
+    /// 
+    /// This method is used, for example, to compute the determinant of a matrix without taking ownership or cloning data.
+    /// 
+    /// ```
+    /// use guiso::matrix::Matrix;
+    /// 
+    /// let i3: Matrix<i32> = Matrix::identity(3);
+    /// let det: i32 = i3.as_ref().det_ref();
+    /// 
+    /// assert_eq!(det, i3.det());
+    /// ```
+    pub fn as_ref(&self) -> Matrix<&T> {
         let mut matrix: Vec<&T> = Vec::with_capacity(self.matrix.len());
         for index in 0..self.matrix.len() {
             matrix.push(&self.matrix[index]);
