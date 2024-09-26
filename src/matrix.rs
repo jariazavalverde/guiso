@@ -73,6 +73,82 @@ impl<T> Matrix<T> {
             self.matrix.get(row * self.order + col)
         }
     }
+
+    pub fn submatrix(&self, row: usize, col: usize) -> Matrix<T>
+    where
+        T: Copy,
+    {
+        let mut matrix: Vec<T> = Vec::with_capacity((self.order - 1) * (self.order - 1));
+        for i in 0..self.order {
+            if i != row {
+                for j in 0..self.order {
+                    if j != col {
+                        matrix.push(self[(i, j)]);
+                    }
+                }
+            }
+        }
+        Matrix {
+            matrix,
+            order: self.order - 1,
+        }
+    }
+
+    /// Computes the determinant of the matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let i3: Matrix<i32> = Matrix::identity(3);
+    /// let a: Matrix<i32> = matrix![1,1,1; 2,1,2; 1,2,4];
+    ///
+    /// assert_eq!(1, i3.det());
+    /// assert_eq!(-3, a.det());
+    /// ```
+    pub fn det(&self) -> T
+    where
+        T: Copy,
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+        T: ops::Neg<Output = T>,
+        T: ops::Add<T, Output = T>,
+        T: ops::Mul<T, Output = T>,
+    {
+        if self.order == 0 {
+            return T::zero();
+        }
+        if self.order == 1 {
+            return self.matrix[0];
+        }
+        let zero: T = T::zero();
+        let mut det: T = T::zero();
+        for index in 0..self.order {
+            if self.matrix[index] != zero {
+                let mut minor: T = self.submatrix(0, index).det();
+                if index % 2 == 0 {
+                    minor = -minor;
+                }
+                det = det + self.matrix[index] * minor;
+            }
+        }
+        det
+    }
+
+    pub fn map_ref(&self) -> Matrix<&T> {
+        let mut matrix: Vec<&T> = Vec::with_capacity(self.matrix.len());
+        for i in 0..self.order {
+            for j in 0..self.order {
+                matrix.push(&self[(i, j)]);
+            }
+        }
+        Matrix {
+            matrix,
+            order: self.order,
+        }
+    }
 }
 
 impl<const N: usize, T> From<[[T; N]; N]> for Matrix<T>
