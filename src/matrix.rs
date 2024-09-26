@@ -1,4 +1,5 @@
 use crate::identity;
+use crate::poly::Poly;
 use std::{cmp, ops};
 
 #[macro_export]
@@ -76,14 +77,14 @@ impl<T> Matrix<T> {
 
     pub fn submatrix(&self, row: usize, col: usize) -> Matrix<T>
     where
-        T: Copy,
+        T: Clone,
     {
         let mut matrix: Vec<T> = Vec::with_capacity((self.order - 1) * (self.order - 1));
         for i in 0..self.order {
             if i != row {
                 for j in 0..self.order {
                     if j != col {
-                        matrix.push(self[(i, j)]);
+                        matrix.push(self[(i, j)].clone());
                     }
                 }
             }
@@ -110,7 +111,7 @@ impl<T> Matrix<T> {
     /// ```
     pub fn det(&self) -> T
     where
-        T: Copy,
+        T: Clone,
         T: PartialEq<T>,
         T: identity::AddIdentity<T>,
         T: ops::Neg<Output = T>,
@@ -121,7 +122,7 @@ impl<T> Matrix<T> {
             return T::zero();
         }
         if self.order == 1 {
-            return self.matrix[0];
+            return self.matrix[0].clone();
         }
         let zero: T = T::zero();
         let mut det: T = T::zero();
@@ -131,23 +132,64 @@ impl<T> Matrix<T> {
                 if index % 2 == 0 {
                     minor = -minor;
                 }
-                det = det + self.matrix[index] * minor;
+                det = det + self.matrix[index].clone() * minor;
             }
         }
         det
     }
 
-    pub fn map_ref(&self) -> Matrix<&T> {
-        let mut matrix: Vec<&T> = Vec::with_capacity(self.matrix.len());
-        for i in 0..self.order {
-            for j in 0..self.order {
-                matrix.push(&self[(i, j)]);
-            }
+    pub fn map<F, S>(&self, f: F) -> Matrix<S>
+    where
+        F: Fn(&T) -> S,
+    {
+        let mut matrix: Vec<S> = Vec::with_capacity(self.matrix.len());
+        for index in 0..self.matrix.len() {
+            matrix.push(f(&self.matrix[index]));
         }
         Matrix {
             matrix,
             order: self.order,
         }
+    }
+
+    pub fn as_ref(&self) -> Matrix<&T> {
+        let mut matrix: Vec<&T> = Vec::with_capacity(self.matrix.len());
+        for index in 0..self.matrix.len() {
+            matrix.push(&self.matrix[index]);
+        }
+        Matrix {
+            matrix,
+            order: self.order,
+        }
+    }
+
+    /// Computes the characteristic polynomial of the matrix.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let i3: Matrix<i8> = Matrix::identity(3);
+    ///
+    /// assert_eq!(Poly::from(vec![-1,3,-3,1]), i3.char_poly());
+    /// ```
+    pub fn char_poly<'a>(&'a self) -> Poly<T>
+    where
+        T: Copy,
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+        T: ops::Neg<Output = T>,
+        T: ops::Add<T, Output = T>,
+        T: ops::Mul<T, Output = T>,
+        &'a T: ops::Mul<&'a T, Output = T>,
+    {
+        let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-(*x)]));
+        let i: Matrix<Poly<T>> = Matrix::identity(self.order());
+        let x: Poly<T> = Poly::from(vec![T::zero(), T::one()]);
+        (&(&i * &x) + &a).det()
     }
 }
 
@@ -272,6 +314,39 @@ where
                 }
                 matrix.push(sum);
             }
+        }
+        Matrix {
+            matrix,
+            order: self.order,
+        }
+    }
+}
+
+impl<'a, T> ops::Mul<&'a T> for &'a Matrix<T>
+where
+    T: PartialEq<T>,
+    &'a T: ops::Mul<&'a T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Matrix<T>;
+
+    /// Returns the product of a matrix and a scalar.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let a: Matrix<u8> = matrix![1,0,2; 1,2,1; 2,1,3];
+    /// let b: Matrix<u8> = matrix![3,0,6; 3,6,3; 6,3,9];
+    ///
+    /// assert_eq!(b, &a * &3);
+    /// ```
+    fn mul(self, rhs: &'a T) -> Self::Output {
+        let mut matrix: Vec<T> = Vec::with_capacity(self.matrix.len());
+        for index in 0..self.matrix.len() {
+            matrix.push(&self.matrix[index] * rhs);
         }
         Matrix {
             matrix,

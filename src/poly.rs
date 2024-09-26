@@ -8,7 +8,7 @@ macro_rules! poly {
     };
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Poly<T> {
     coeff: Vec<T>,
 }
@@ -169,6 +169,33 @@ impl<T> Into<Vec<T>> for Poly<T> {
     }
 }
 
+impl<T> ops::Add<Poly<T>> for Poly<T>
+where
+    T: Copy,
+    T: PartialEq<T>,
+    T: ops::Add<T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Poly<T>;
+
+    /// Returns the sum of two polynomials.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    /// let q: Poly<i32> = Poly::from(vec![5, 3]);
+    /// let r: Poly<i32> = Poly::from(vec![6, 5, 4, 6]);
+    ///
+    /// assert_eq!(r, p + q);
+    /// ```
+    fn add(self, p: Self) -> Self::Output {
+        &self + &p
+    }
+}
+
 impl<'a, T> ops::Add<&'a Poly<T>> for &'a Poly<T>
 where
     T: Copy,
@@ -211,6 +238,34 @@ where
             coeff[index] = coeff[index] + smaller[index];
         }
         Poly::from(coeff)
+    }
+}
+
+impl<T> ops::Mul<Poly<T>> for Poly<T>
+where
+    T: Copy,
+    T: PartialEq<T>,
+    T: ops::Add<T, Output = T>,
+    T: ops::Mul<T, Output = T>,
+    T: identity::AddIdentity<T>,
+{
+    type Output = Poly<T>;
+
+    /// Returns the product of two polynomials.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    /// let q: Poly<i32> = Poly::from(vec![5, 3]);
+    /// let r: Poly<i32> = Poly::from(vec![5, 13, 26, 42, 18]);
+    ///
+    /// assert_eq!(r, p * q);
+    /// ```
+    fn mul(self, p: Self) -> Self::Output {
+        &self * &p
     }
 }
 
@@ -281,6 +336,36 @@ where
     }
 }
 
+impl<T> ops::Neg for Poly<T>
+where
+    T: Copy,
+    T: ops::Neg<Output = T>,
+{
+    type Output = Poly<T>;
+
+    ///
+    fn neg(self) -> Self::Output {
+        -&self
+    }
+}
+
+impl<'a, T> ops::Neg for &'a Poly<T>
+where
+    T: Copy,
+    T: ops::Neg<Output = T>,
+{
+    type Output = Poly<T>;
+
+    ///
+    fn neg(self) -> Self::Output {
+        let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
+        for index in 0..self.coeff.len() {
+            coeff.push(-self.coeff[index]);
+        }
+        Poly { coeff }
+    }
+}
+
 impl<T> ops::Index<usize> for Poly<T> {
     type Output = T;
 
@@ -319,7 +404,8 @@ where
 
 impl<T> identity::AddIdentity<Poly<T>> for Poly<T>
 where
-    T: identity::AddIdentity<T> + PartialEq<T>,
+    T: identity::AddIdentity<T>,
+    T: PartialEq<T>,
 {
     fn zero() -> Poly<T> {
         poly![T::zero()]
