@@ -2,6 +2,7 @@ use crate::identity;
 use crate::poly::Poly;
 use std::{cmp, ops};
 
+///
 #[macro_export]
 macro_rules! matrix {
     ($($($elem:expr),*);*) => {
@@ -9,6 +10,7 @@ macro_rules! matrix {
     };
 }
 
+///
 #[derive(Debug)]
 pub struct Matrix<T> {
     matrix: Vec<T>,
@@ -75,16 +77,14 @@ impl<T> Matrix<T> {
         }
     }
 
-    pub fn submatrix(&self, row: usize, col: usize) -> Matrix<T>
-    where
-        T: Clone,
-    {
-        let mut matrix: Vec<T> = Vec::with_capacity((self.order - 1) * (self.order - 1));
+    ///
+    pub fn submatrix(&self, row: usize, col: usize) -> Matrix<&T> {
+        let mut matrix: Vec<&T> = Vec::with_capacity((self.order - 1) * (self.order - 1));
         for i in 0..self.order {
             if i != row {
                 for j in 0..self.order {
                     if j != col {
-                        matrix.push(self[(i, j)].clone());
+                        matrix.push(&self[(i, j)]);
                     }
                 }
             }
@@ -111,31 +111,13 @@ impl<T> Matrix<T> {
     /// ```
     pub fn det(&self) -> T
     where
-        T: Clone,
         T: PartialEq<T>,
         T: identity::AddIdentity<T>,
-        T: ops::Neg<Output = T>,
-        T: ops::Add<T, Output = T>,
-        T: ops::Mul<T, Output = T>,
+        for<'b> &'b T: ops::Neg<Output = T>,
+        for<'b> &'b T: ops::Add<&'b T, Output = T>,
+        for<'b> &'b T: ops::Mul<&'b T, Output = T>,
     {
-        if self.order == 0 {
-            return T::zero();
-        }
-        if self.order == 1 {
-            return self.matrix[0].clone();
-        }
-        let zero: T = T::zero();
-        let mut det: T = T::zero();
-        for index in 0..self.order {
-            if self.matrix[index] != zero {
-                let mut minor: T = self.submatrix(0, index).det();
-                if index % 2 == 0 {
-                    minor = -minor;
-                }
-                det = det + self.matrix[index].clone() * minor;
-            }
-        }
-        det
+        self.matrix_ref().det_ref()
     }
 
     pub fn map<F, S>(&self, f: F) -> Matrix<S>
@@ -152,7 +134,7 @@ impl<T> Matrix<T> {
         }
     }
 
-    pub fn as_ref(&self) -> Matrix<&T> {
+    pub fn matrix_ref(&self) -> Matrix<&T> {
         let mut matrix: Vec<&T> = Vec::with_capacity(self.matrix.len());
         for index in 0..self.matrix.len() {
             matrix.push(&self.matrix[index]);
@@ -184,12 +166,61 @@ impl<T> Matrix<T> {
         T: ops::Neg<Output = T>,
         T: ops::Add<T, Output = T>,
         T: ops::Mul<T, Output = T>,
-        &'a T: ops::Mul<&'a T, Output = T>,
     {
-        let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-(*x)]));
+        let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-*x]));
         let i: Matrix<Poly<T>> = Matrix::identity(self.order());
         let x: Poly<T> = Poly::from(vec![T::zero(), T::one()]);
         (&(&i * &x) + &a).det()
+    }
+}
+
+impl<'a, T> Matrix<&'a T> {
+    ///
+    pub fn det_ref(&self) -> T
+    where
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+        for<'b> &'b T: ops::Neg<Output = T>,
+        for<'b> &'b T: ops::Add<&'b T, Output = T>,
+        for<'b> &'b T: ops::Mul<&'b T, Output = T>,
+    {
+        let zero: T = T::zero();
+        if self.order == 0 {
+            return zero;
+        }
+        if self.order == 1 {
+            return self.matrix[0] + &zero;
+        }
+        let zero: T = T::zero();
+        let mut det: T = T::zero();
+        for index in 0..self.order {
+            if self.matrix[index] != &zero {
+                let mut minor: T = self.submatrix_ref(0, index).det_ref();
+                if index % 2 == 0 {
+                    minor = -&minor;
+                }
+                det = &det + &(self.matrix[index] * &minor);
+            }
+        }
+        det
+    }
+
+    ///
+    pub fn submatrix_ref(&self, row: usize, col: usize) -> Matrix<&T> {
+        let mut matrix: Vec<&T> = Vec::with_capacity((self.order - 1) * (self.order - 1));
+        for i in 0..self.order {
+            if i != row {
+                for j in 0..self.order {
+                    if j != col {
+                        matrix.push(self[(i, j)]);
+                    }
+                }
+            }
+        }
+        Matrix {
+            matrix,
+            order: self.order - 1,
+        }
     }
 }
 
@@ -215,10 +246,7 @@ where
     }
 }
 
-impl<T> From<(Vec<T>, usize)> for Matrix<T>
-where
-    T: Clone,
-{
+impl<T> From<(Vec<T>, usize)> for Matrix<T> {
     /// Makes a new matrix from a vector.
     ///
     /// # Examples
@@ -244,8 +272,8 @@ where
 impl<'a, T> ops::Add<&'a Matrix<T>> for &'a Matrix<T>
 where
     T: PartialEq<T>,
-    &'a T: ops::Add<&'a T, Output = T>,
     T: identity::AddIdentity<T>,
+    &'a T: ops::Add<&'a T, Output = T>,
 {
     type Output = Matrix<T>;
 
@@ -282,8 +310,8 @@ impl<'a, T> ops::Mul<&'a Matrix<T>> for &'a Matrix<T>
 where
     T: PartialEq<T>,
     T: ops::Add<T, Output = T>,
-    &'a T: ops::Mul<&'a T, Output = T>,
     T: identity::AddIdentity<T>,
+    &'a T: ops::Mul<&'a T, Output = T>,
 {
     type Output = Matrix<T>;
 
@@ -325,8 +353,8 @@ where
 impl<'a, T> ops::Mul<&'a T> for &'a Matrix<T>
 where
     T: PartialEq<T>,
-    &'a T: ops::Mul<&'a T, Output = T>,
     T: identity::AddIdentity<T>,
+    &'a T: ops::Mul<&'a T, Output = T>,
 {
     type Output = Matrix<T>;
 

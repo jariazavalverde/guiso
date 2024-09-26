@@ -1,6 +1,7 @@
 use crate::identity;
 use std::{cmp, fmt, ops};
 
+///
 #[macro_export]
 macro_rules! poly {
     ($($data:expr),*) => {
@@ -8,7 +9,8 @@ macro_rules! poly {
     };
 }
 
-#[derive(Debug, Clone)]
+///
+#[derive(Debug)]
 pub struct Poly<T> {
     coeff: Vec<T>,
 }
