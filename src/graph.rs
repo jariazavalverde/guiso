@@ -45,6 +45,39 @@ impl<T> Graph<T> {
     pub fn vertices(&self) -> usize {
         self.matrix.order()
     }
+
+    /// Checks whether two graphs are isospectral.
+    ///
+    /// Two graphs are considered isospectral if their adjacency matrices share the same set of eigenvalues,
+    /// even though the graphs themselves may differ in structure.
+    ///
+    /// # Examples
+    ///
+    /// The graphs $C_4$​ (a cycle of 4 nodes) and $K_{2,2}$​ (a complete bipartite graph) are isospectral.
+    /// Both graphs share the same spectrum: $\{2,0,0,−2\}$, making them isospectral but non-isomorphic.
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    /// use guiso::graph::Graph;
+    ///
+    /// let c4: Graph<i8> = Graph::from(matrix![0,1,0,1; 1,0,1,0; 0,1,0,1; 1,0,1,0]);
+    /// let k2_2: Graph<i8> = Graph::from(matrix![0,0,1,1; 0,0,1,1; 1,1,0,0; 1,1,0,0]);
+    ///
+    /// assert_eq!(true, c4.isospectral(&k2_2));
+    /// ```
+    pub fn isospectral(&self, g: &Graph<T>) -> bool
+    where
+        T: Copy,
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+        T: ops::Neg<Output = T>,
+        T: ops::Add<T, Output = T>,
+        T: ops::Mul<T, Output = T>,
+    {
+        self.matrix.char_poly() == g.matrix.char_poly()
+    }
 }
 
 impl<const V: usize, T> From<[[T; V]; V]> for Graph<T>
