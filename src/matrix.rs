@@ -1,6 +1,6 @@
 use crate::identity;
 use crate::poly::Poly;
-use std::{cmp, ops};
+use std::{cmp, fmt, ops};
 
 ///
 #[macro_export]
@@ -235,6 +235,65 @@ impl<'a, T> Matrix<&'a T> {
             matrix,
             order: self.order - 1,
         }
+    }
+}
+
+impl<T> fmt::Display for Matrix<T>
+where
+    T: fmt::Display,
+{
+    /// Formats the matrix using the given formatter.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let i3: Matrix<i32> = Matrix::identity(3);
+    /// let a: Matrix<i32> = matrix![111,11; 1111,1];
+    ///
+    /// assert_eq!("[ [1, 0, 0]\n  [0, 1, 0]\n  [0, 0, 1] ]", format!("{i3}"));
+    /// assert_eq!("[ [ 111, 11]\n  [1111,  1] ]", format!("{a}"));
+    /// ```
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let format: Vec<String> = self.matrix.iter().map(|x: &T| format!("{x}")).collect();
+        let mut width: Vec<usize> = vec![0; self.order];
+        // compute max width of each column
+        for i in 0..self.order {
+            for j in 0..self.order {
+                width[j] = cmp::max(width[j], format[i * self.order + j].len());
+            }
+        }
+        // open matrix
+        write!(f, "[ ")?;
+        for i in 0..self.order {
+            // open row
+            if i > 0 {
+                write!(f, "  ")?;
+            }
+            write!(f, "[")?;
+            // write element
+            for j in 0..self.order {
+                write!(
+                    f,
+                    "{:>width$}",
+                    format[i * self.order + j],
+                    width = width[j]
+                )?;
+                if j < self.order - 1 {
+                    write!(f, ", ")?;
+                }
+            }
+            // close row
+            if i < self.order - 1 {
+                writeln!(f, "]")?;
+            // close matrix
+            } else {
+                write!(f, "] ]")?;
+            }
+        }
+        Result::Ok(())
     }
 }
 
