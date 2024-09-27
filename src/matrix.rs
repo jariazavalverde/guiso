@@ -207,7 +207,7 @@ impl<T> Matrix<T> {
     /// ```
     pub fn char_poly<'a>(&'a self) -> Poly<T>
     where
-        T: Copy,
+        T: Clone,
         T: PartialEq<T>,
         T: identity::AddIdentity<T>,
         T: identity::MulIdentity<T>,
@@ -215,7 +215,7 @@ impl<T> Matrix<T> {
         T: ops::Add<T, Output = T>,
         T: ops::Mul<T, Output = T>,
     {
-        let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-*x]));
+        let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-x.clone()]));
         let i: Matrix<Poly<T>> = Matrix::identity(self.order());
         let x: Poly<T> = Poly::from(vec![T::zero(), T::one()]);
         (&(&i * &x) + &a).det()

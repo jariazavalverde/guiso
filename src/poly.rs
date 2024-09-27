@@ -67,14 +67,14 @@ impl<T> Poly<T> {
     /// ```
     pub fn scalar(&self, scalar: T) -> Self
     where
-        T: Copy,
+        T: Clone,
         T: PartialEq<T>,
         T: ops::Mul<T, Output = T>,
         T: identity::AddIdentity<T>,
     {
         let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
         for elem in self.coeff.iter() {
-            coeff.push(scalar * *elem);
+            coeff.push(scalar.clone() * elem.clone());
         }
         Poly::from(coeff)
     }
@@ -173,7 +173,7 @@ impl<T> Into<Vec<T>> for Poly<T> {
 
 impl<T> ops::Add<Poly<T>> for Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: PartialEq<T>,
     T: ops::Add<T, Output = T>,
     T: identity::AddIdentity<T>,
@@ -200,7 +200,7 @@ where
 
 impl<'a, T> ops::Add<&'a Poly<T>> for &'a Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: PartialEq<T>,
     T: ops::Add<T, Output = T>,
     T: identity::AddIdentity<T>,
@@ -234,10 +234,10 @@ where
         let size: usize = cmp::max(greater.coeff.len(), smaller.coeff.len());
         let mut coeff: Vec<T> = Vec::with_capacity(size);
         for index in 0..greater.coeff.len() {
-            coeff.push(greater[index]);
+            coeff.push(greater[index].clone());
         }
         for index in 0..smaller.coeff.len() {
-            coeff[index] = coeff[index] + smaller[index];
+            coeff[index] = coeff[index].clone() + smaller[index].clone();
         }
         Poly::from(coeff)
     }
@@ -245,7 +245,7 @@ where
 
 impl<T> ops::Mul<Poly<T>> for Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: PartialEq<T>,
     T: ops::Add<T, Output = T>,
     T: ops::Mul<T, Output = T>,
@@ -273,7 +273,7 @@ where
 
 impl<'a, T> ops::Mul<&'a Poly<T>> for &'a Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: PartialEq<T>,
     T: ops::Add<T, Output = T>,
     T: ops::Mul<T, Output = T>,
@@ -301,7 +301,7 @@ where
         for (index1, coeff1) in self.coeff.iter().enumerate() {
             for (index2, coeff2) in p.coeff.iter().enumerate() {
                 let exp: usize = index1 + index2;
-                coeff[exp] = coeff[exp] + *coeff1 * *coeff2;
+                coeff[exp] = coeff[exp].clone() + coeff1.clone() * coeff2.clone();
             }
         }
         Poly::from(coeff)
@@ -310,7 +310,7 @@ where
 
 impl<'a, T> ops::Mul<T> for &'a Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: PartialEq<T>,
     T: ops::Mul<T, Output = T>,
     T: identity::AddIdentity<T>,
@@ -332,7 +332,7 @@ where
     fn mul(self, scalar: T) -> Self::Output {
         let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
         for elem in self.coeff.iter() {
-            coeff.push(*elem * scalar);
+            coeff.push(elem.clone() * scalar.clone());
         }
         Poly::from(coeff)
     }
@@ -340,7 +340,7 @@ where
 
 impl<T> ops::Neg for Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: ops::Neg<Output = T>,
 {
     type Output = Poly<T>;
@@ -353,7 +353,7 @@ where
 
 impl<'a, T> ops::Neg for &'a Poly<T>
 where
-    T: Copy,
+    T: Clone,
     T: ops::Neg<Output = T>,
 {
     type Output = Poly<T>;
@@ -362,7 +362,7 @@ where
     fn neg(self) -> Self::Output {
         let mut coeff: Vec<T> = Vec::with_capacity(self.coeff.len());
         for index in 0..self.coeff.len() {
-            coeff.push(-self.coeff[index]);
+            coeff.push(-self.coeff[index].clone());
         }
         Poly { coeff }
     }

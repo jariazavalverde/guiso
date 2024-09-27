@@ -78,7 +78,7 @@ impl<T> Graph<T> {
     /// ```
     pub fn isospectral(&self, g: &Graph<T>) -> bool
     where
-        T: Copy,
+        T: Clone,
         T: PartialEq<T>,
         T: identity::AddIdentity<T>,
         T: identity::MulIdentity<T>,
