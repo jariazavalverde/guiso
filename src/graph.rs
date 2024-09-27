@@ -17,7 +17,8 @@ pub struct Graph<T> {
 }
 
 impl<T> Graph<T> {
-    /// Makes a complete graph with the given vertices.
+    /// Creates a complete graph with the specified vertices.
+    ///
     /// A complete graph is a graph in which each pair of graph vertices is connected by an edge.
     ///
     /// # Examples

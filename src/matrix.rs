@@ -40,6 +40,40 @@ impl<T> Matrix<T> {
         Matrix { matrix, order }
     }
 
+    /// Creates the row-based permutation matrix associated to a permutation.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let p: Matrix<u8> = Matrix::row_permutation([1,3,2]);
+    /// let a: Matrix<u8> = matrix![1,0,0; 0,0,1; 0,1,0];
+    ///
+    /// assert_eq!(a, p);
+    /// ```
+    pub fn row_permutation<I>(permutation: I) -> Matrix<T>
+    where
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+        I: IntoIterator<Item = usize>,
+    {
+        let elems: Vec<usize> = permutation.into_iter().collect();
+        let order: usize = elems.len();
+        let mut matrix: Vec<T> = Vec::with_capacity(order * order);
+        for i in 0..order {
+            for j in 0..order {
+                matrix.push(if j + 1 == elems[i] {
+                    T::one()
+                } else {
+                    T::zero()
+                });
+            }
+        }
+        Matrix { matrix, order }
+    }
+
     /// Returns the order of the matrix.
     ///
     /// # Examples
