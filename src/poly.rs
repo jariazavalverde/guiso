@@ -391,12 +391,30 @@ impl<T> cmp::PartialEq<Poly<T>> for Poly<T>
 where
     T: PartialEq<T>,
 {
+    /// Compares two polynomials.
+    /// Two polynomials with the same order are equal when the coefficients of all their monomials are equal.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let p: Poly<i32> = Poly::from(vec![1, 2, 4, 6]);
+    /// let q: Poly<i32> = Poly::from(vec![1, 2, 4, 6, 0, 0]);
+    /// let r: Poly<i32> = Poly::from(vec![3, 2, 4, 6]);
+    /// let s: Poly<i32> = Poly::from(vec![2, 4, 6]);
+    ///
+    /// assert_eq!(true, p == p);
+    /// assert_eq!(true, p == q);
+    /// assert_eq!(false, p == r);
+    /// assert_eq!(false, p == s);
+    /// ```
     fn eq(&self, other: &Self) -> bool {
         if self.coeff.len() != other.coeff.len() {
             return false;
         }
-        for i in 0..self.coeff.len() {
-            if self[i] != other[i] {
+        for index in 0..self.coeff.len() {
+            if self.coeff[index] != other.coeff[index] {
                 return false;
             }
         }

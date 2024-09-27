@@ -135,17 +135,17 @@ impl<T> Matrix<T> {
     }
 
     /// Converts from `&Matrix<T>` to `Matrix<&T>`.
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// This method is used, for example, to compute the determinant of a matrix without taking ownership or cloning data.
-    /// 
+    ///
     /// ```
     /// use guiso::matrix::Matrix;
-    /// 
+    ///
     /// let i3: Matrix<i32> = Matrix::identity(3);
     /// let det: i32 = i3.as_ref().det_ref();
-    /// 
+    ///
     /// assert_eq!(det, i3.det());
     /// ```
     pub fn as_ref(&self) -> Matrix<&T> {
@@ -260,7 +260,7 @@ where
     }
 }
 
-impl<T> From<(Vec<T>, usize)> for Matrix<T> {
+impl<T> From<Vec<T>> for Matrix<T> {
     /// Makes a new matrix from a vector.
     ///
     /// # Examples
@@ -268,18 +268,14 @@ impl<T> From<(Vec<T>, usize)> for Matrix<T> {
     /// ```
     /// use guiso::matrix::Matrix;
     ///
-    /// let i3: Matrix<u8> = Matrix::from((vec![1,0,0,0,1,0,0,0,1], 3));
+    /// let i3: Matrix<u8> = Matrix::from(vec![1,0,0,0,1,0,0,0,1]);
     /// ```
-    fn from(v: (Vec<T>, usize)) -> Self {
-        let (matrix, order) = v;
-        if matrix.len() == order * order {
-            Matrix { matrix, order }
-        } else {
-            Matrix {
-                matrix: Vec::new(),
-                order: 0,
-            }
+    fn from(matrix: Vec<T>) -> Self {
+        let order: usize = (matrix.len() as f64).sqrt().floor() as usize;
+        if order * order != matrix.len() {
+            panic!("Incompatible number of elements.");
         }
+        Matrix { matrix, order }
     }
 }
 
@@ -422,12 +418,29 @@ impl<T> cmp::PartialEq<Matrix<T>> for Matrix<T>
 where
     T: PartialEq<T>,
 {
+    /// Compares two matrices.
+    /// Two matrices with the same order are equal when the coefficients of all their entries are equal.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::matrix;
+    /// use guiso::matrix::Matrix;
+    ///
+    /// let a: Matrix<i32> = matrix![1,0,2; 1,2,1; 2,1,3];
+    /// let b: Matrix<i32> = matrix![1,0,1; 1,2,1; 2,1,3];
+    /// let c: Matrix<i32> = matrix![1,0; 1,2];
+    ///
+    /// assert_eq!(true, a == a);
+    /// assert_eq!(false, a == b);
+    /// assert_eq!(false, a == c);
+    /// ```
     fn eq(&self, other: &Self) -> bool {
         if self.order != other.order {
             return false;
         }
-        for i in 0..self.matrix.len() {
-            if self.matrix[i] != other.matrix[i] {
+        for index in 0..self.matrix.len() {
+            if self.matrix[index] != other.matrix[index] {
                 return false;
             }
         }

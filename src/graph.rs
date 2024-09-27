@@ -29,7 +29,7 @@ impl<T> Graph<T> {
         T: identity::MulIdentity<T>,
     {
         let matrix: Vec<T> = vec![T::one(); vertices * vertices];
-        Graph::from((matrix, vertices))
+        Graph::from(matrix)
     }
 
     /// Returns the number of vertices of the graph.
@@ -67,7 +67,7 @@ where
     }
 }
 
-impl<T> From<(Vec<T>, usize)> for Graph<T>
+impl<T> From<Vec<T>> for Graph<T>
 where
     T: Clone,
 {
@@ -82,9 +82,9 @@ where
     /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
     /// let g: Graph<u8> = Graph::from(i3);
     /// ```
-    fn from(v: (Vec<T>, usize)) -> Self {
+    fn from(vector: Vec<T>) -> Self {
         Graph {
-            matrix: Matrix::from(v),
+            matrix: Matrix::from(vector),
         }
     }
 }
