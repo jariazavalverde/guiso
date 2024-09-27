@@ -1,21 +1,3 @@
-macro_rules! num_identity {
-    ($type:ident) => {
-        impl AddIdentity<$type> for $type {
-            #[inline(always)]
-            fn zero() -> $type {
-                0 as $type
-            }
-        }
-
-        impl MulIdentity<$type> for $type {
-            #[inline(always)]
-            fn one() -> $type {
-                1 as $type
-            }
-        }
-    };
-}
-
 /// Used for numeric types with additive identity.
 ///
 /// # Examples
@@ -28,8 +10,23 @@ macro_rules! num_identity {
 /// assert_eq!(3, 3 + zero);
 /// assert_eq!(2, zero + 2);
 /// ```
-pub trait AddIdentity<T> {
+pub trait AddIdentity<T = Self> {
     fn zero() -> T;
+}
+
+macro_rules! add_identity_impl {
+    ($($t:ty)*) => ($(
+        impl AddIdentity<$t> for $t {
+            #[inline(always)]
+            fn zero() -> $t {
+                0 as $t
+            }
+        }
+    )*)
+}
+
+add_identity_impl! {
+    usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64
 }
 
 /// Used for numeric types with multiplicative identity.
@@ -44,19 +41,21 @@ pub trait AddIdentity<T> {
 /// assert_eq!(3, 3 * one);
 /// assert_eq!(2, one * 2);
 /// ```
-pub trait MulIdentity<T> {
+pub trait MulIdentity<T = Self> {
     fn one() -> T;
 }
 
-num_identity!(u8);
-num_identity!(u16);
-num_identity!(u32);
-num_identity!(u64);
-num_identity!(u128);
-num_identity!(i8);
-num_identity!(i16);
-num_identity!(i32);
-num_identity!(i64);
-num_identity!(i128);
-num_identity!(f32);
-num_identity!(f64);
+macro_rules! mul_identity_impl {
+    ($($t:ty)*) => ($(
+        impl MulIdentity<$t> for $t {
+            #[inline(always)]
+            fn one() -> $t {
+                1 as $t
+            }
+        }
+    )*)
+}
+
+mul_identity_impl! {
+    usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64
+}
