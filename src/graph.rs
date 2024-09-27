@@ -2,6 +2,16 @@ use crate::identity;
 use crate::matrix::Matrix;
 use std::ops;
 
+///
+#[macro_export]
+macro_rules! graph {
+    ($($($elem:expr),*);*) => {
+        Graph::from([$([$($elem),*]),*])
+    };
+}
+
+///
+#[derive(Debug)]
 pub struct Graph<T> {
     matrix: Matrix<T>,
 }
@@ -57,12 +67,11 @@ impl<T> Graph<T> {
     /// Both graphs share the same spectrum: $\{2,0,0,−2\}$, making them isospectral but non-isomorphic.
     ///
     /// ```
-    /// use guiso::matrix;
-    /// use guiso::matrix::Matrix;
+    /// use guiso::graph;
     /// use guiso::graph::Graph;
     ///
-    /// let c4: Graph<i8> = Graph::from(matrix![0,1,0,1; 1,0,1,0; 0,1,0,1; 1,0,1,0]);
-    /// let k2_2: Graph<i8> = Graph::from(matrix![0,0,1,1; 0,0,1,1; 1,1,0,0; 1,1,0,0]);
+    /// let c4: Graph<i8> = graph![0,1,0,1; 1,0,1,0; 0,1,0,1; 1,0,1,0];
+    /// let k2_2: Graph<i8> = graph![0,0,1,1; 0,0,1,1; 1,1,0,0; 1,1,0,0];
     ///
     /// assert_eq!(true, c4.isospectral(&k2_2));
     /// ```
@@ -91,7 +100,9 @@ where
     /// ```
     /// use guiso::graph::Graph;
     ///
-    /// let g: Graph<u8> = Graph::from([[1,0,0],[0,1,0],[0,0,1]]);
+    /// let k3: Graph<u8> = Graph::from([[1,0,0],[0,1,0],[0,0,1]]);
+    ///
+    /// assert_eq!(3, k3.vertices());
     /// ```
     fn from(arr: [[T; V]; V]) -> Self {
         Graph {
@@ -109,11 +120,11 @@ where
     /// # Examples
     ///
     /// ```
-    /// use guiso::matrix::Matrix;
     /// use guiso::graph::Graph;
     ///
-    /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
-    /// let g: Graph<u8> = Graph::from(i3);
+    /// let k3: Graph<i8> = Graph::from(vec![1,0,0,0,1,0,0,0,1]);
+    ///
+    /// assert_eq!(3, k3.vertices());
     /// ```
     fn from(vector: Vec<T>) -> Self {
         Graph {
@@ -131,8 +142,10 @@ impl<T> From<Matrix<T>> for Graph<T> {
     /// use guiso::matrix::Matrix;
     /// use guiso::graph::Graph;
     ///
-    /// let i3: Matrix<u8> = Matrix::from([[1,0,0],[0,1,0],[0,0,1]]);
+    /// let i3: Matrix<u8> = Matrix::identity(3);
     /// let g: Graph<u8> = Graph::from(i3);
+    ///
+    /// assert_eq!(3, g.vertices());
     /// ```
     fn from(matrix: Matrix<T>) -> Self {
         Graph { matrix }
