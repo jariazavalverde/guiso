@@ -46,6 +46,37 @@ impl<T> Graph<T> {
         Graph::from(matrix)
     }
 
+    /// Creates a complete bipartite graph with the specified vertices.
+    ///
+    /// A complete bipartite graph is a bipartite graph where every vertex of the first set is connected to every vertex of the second set.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::graph::Graph;
+    ///
+    /// let k_3_5: Graph<u8> = Graph::biclique(3,5);
+    ///
+    /// ```
+    pub fn biclique(n: usize, m: usize) -> Graph<T>
+    where
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+    {
+        let vertices: usize = n + m;
+        let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
+        for i in 0..vertices {
+            for j in 0..vertices {
+                matrix.push(if i == j || i < n && j >= n || i >= n && j < n {
+                    T::one()
+                } else {
+                    T::zero()
+                });
+            }
+        }
+        Graph::from(matrix)
+    }
+
     /// Returns the number of vertices of the graph.
     ///
     /// # Examples
