@@ -36,10 +36,13 @@ impl<T> Graph<T> {
     /// ```
     pub fn complete(vertices: usize) -> Graph<T>
     where
-        T: Clone,
         T: identity::MulIdentity<T>,
     {
-        let matrix: Vec<T> = vec![T::one(); vertices * vertices];
+        let order: usize = vertices * vertices;
+        let mut matrix: Vec<T> = Vec::with_capacity(order);
+        for _index in 0..order {
+            matrix.push(T::one());
+        }
         Graph::from(matrix)
     }
 
@@ -112,10 +115,7 @@ where
     }
 }
 
-impl<T> From<Vec<T>> for Graph<T>
-where
-    T: Clone,
-{
+impl<T> From<Vec<T>> for Graph<T> {
     /// Makes a new graph from a vector.
     ///
     /// # Examples
