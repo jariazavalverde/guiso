@@ -205,7 +205,7 @@ impl<T> Matrix<T> {
     ///
     /// assert_eq!(Poly::from(vec![-1,3,-3,1]), i3.char_poly());
     /// ```
-    pub fn char_poly<'a>(&'a self) -> Poly<T>
+    pub fn char_poly(&self) -> Poly<T>
     where
         T: Clone,
         T: PartialEq<T>,
@@ -217,7 +217,7 @@ impl<T> Matrix<T> {
     {
         let a: Matrix<Poly<T>> = self.map(|x: &T| Poly::from(vec![-x.clone()]));
         let i: Matrix<Poly<T>> = Matrix::identity(self.order());
-        let x: Poly<T> = Poly::from(vec![T::zero(), T::one()]);
+        let x: Poly<T> = Poly::monomial(1, T::one());
         (&(&i * &x) + &a).det()
     }
 }

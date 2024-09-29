@@ -16,6 +16,35 @@ pub struct Poly<T> {
 }
 
 impl<T> Poly<T> {
+    /// Creates a non-zero monomial.
+    ///
+    /// A monomial is a polynomial which has only one term.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::poly::Poly;
+    ///
+    /// let m: Poly<i32> = Poly::monomial(3, 2);
+    ///
+    /// assert_eq!("2x^3", format!("{m}"));
+    /// ```
+    pub fn monomial(order: usize, coefficient: T) -> Poly<T>
+    where
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+    {
+        if coefficient == T::zero() {
+            panic!("Coefficient of the monomial must be non-zero.");
+        }
+        let mut coeff: Vec<T> = Vec::with_capacity(order + 1);
+        for _index in 0..order {
+            coeff.push(T::zero());
+        }
+        coeff.push(coefficient);
+        Poly { coeff }
+    }
+
     /// Returns the coefficient of the monomial with the given degree.
     ///
     /// # Examples
