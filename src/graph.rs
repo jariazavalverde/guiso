@@ -91,6 +91,23 @@ impl<T> Graph<T> {
         self.matrix.order()
     }
 
+    /// Returns the adjacency matrix of the graph.
+    ///
+    /// An adjacency matrix is a square matrix that indicate whether pairs of vertices are adjacent or not in the graph.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::graph::Graph;
+    ///
+    /// let k3: Graph<i32> = Graph::complete(3);
+    ///
+    /// assert_eq!(3, k3.adjacency().order());
+    /// ```
+    pub fn adjacency(&self) -> &Matrix<T> {
+        &self.matrix
+    }
+
     /// Checks whether two graphs are isospectral.
     ///
     /// Two graphs are considered isospectral if their adjacency matrices share the same set of eigenvalues,
