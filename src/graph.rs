@@ -27,21 +27,17 @@ impl<T> Graph<T> {
     /// use guiso::graph::Graph;
     ///
     /// let k3: Graph<u8> = Graph::complete(3);
-    ///
-    /// for i in 0..3 {
-    ///     for j in 0..3 {
-    ///         assert_eq!(1, k3[(i,j)]);
-    ///     }
-    /// }
     /// ```
     pub fn complete(vertices: usize) -> Graph<T>
     where
+        T: identity::AddIdentity<T>,
         T: identity::MulIdentity<T>,
     {
-        let order: usize = vertices * vertices;
-        let mut matrix: Vec<T> = Vec::with_capacity(order);
-        for _index in 0..order {
-            matrix.push(T::one());
+        let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
+        for i in 0..vertices {
+            for j in 0..vertices {
+                matrix.push(if i != j { T::one() } else { T::zero() });
+            }
         }
         Graph::from(matrix)
     }
@@ -55,8 +51,7 @@ impl<T> Graph<T> {
     /// ```
     /// use guiso::graph::Graph;
     ///
-    /// let k_3_5: Graph<u8> = Graph::biclique(3,5);
-    ///
+    /// let k3_5: Graph<u8> = Graph::biclique(3,5);
     /// ```
     pub fn biclique(n: usize, m: usize) -> Graph<T>
     where
@@ -67,7 +62,7 @@ impl<T> Graph<T> {
         let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
         for i in 0..vertices {
             for j in 0..vertices {
-                matrix.push(if i == j || i < n && j >= n || i >= n && j < n {
+                matrix.push(if i < n && j >= n || i >= n && j < n {
                     T::one()
                 } else {
                     T::zero()
@@ -213,7 +208,7 @@ impl<T> ops::Index<(usize, usize)> for Graph<T> {
     ///
     /// let k3: Graph<u8> = Graph::complete(3);
     ///
-    /// assert_eq!(1, k3[(0, 0)]);
+    /// assert_eq!(0, k3[(0, 0)]);
     /// ```
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         &self.matrix[index]
