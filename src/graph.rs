@@ -1,4 +1,5 @@
 use crate::identity;
+use crate::math::combinatorics;
 use crate::matrix::Matrix;
 use std::ops;
 
@@ -67,6 +68,41 @@ impl<T> Graph<T> {
                 } else {
                     T::zero()
                 });
+            }
+        }
+        Graph::from(matrix)
+    }
+
+    /// Creates a Johnson graph J(n, k).
+    ///
+    /// The vertices of the Johnson graph J(n, k) are the k-element subsets of an n-element set.
+    /// Two vertices are adjacent when the intersection of the two vertices contains k-1 elements.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::graph::Graph;
+    ///
+    /// let j5_2: Graph<u8> = Graph::johnson(5,2);
+    /// ```
+    pub fn johnson(n: usize, k: usize) -> Graph<T>
+    where
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+    {
+        let vertices: usize = combinatorics::binomial(n as u64, k as u64) as usize;
+        let pow: usize = 2u32.pow(n as u32) as usize;
+        let elems: u32 = (k - 1) as u32;
+        let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
+        for i in 0..pow {
+            for j in 0..pow {
+                if i.count_ones() as usize == k && j.count_ones() as usize == k {
+                    matrix.push(if (i & j).count_ones() == elems {
+                        T::one()
+                    } else {
+                        T::zero()
+                    });
+                }
             }
         }
         Graph::from(matrix)
