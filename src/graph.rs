@@ -92,17 +92,18 @@ impl<T> Graph<T> {
     {
         let vertices: usize = combinatorics::binomial(n as u64, k as u64) as usize;
         let pow: usize = 2u32.pow(n as u32) as usize;
-        let elems: u32 = (k - 1) as u32;
+        let k1: u32 = (k - 1) as u32;
         let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
-        for i in 0..pow {
-            for j in 0..pow {
-                if i.count_ones() as usize == k && j.count_ones() as usize == k {
-                    matrix.push(if (i & j).count_ones() == elems {
-                        T::one()
-                    } else {
-                        T::zero()
-                    });
-                }
+        let k_one_elems: Vec<usize> = (0..pow)
+            .filter(|n: &usize| n.count_ones() == k as u32)
+            .collect();
+        for i in k_one_elems.iter() {
+            for j in k_one_elems.iter() {
+                matrix.push(if (*i & *j).count_ones() == k1 {
+                    T::one()
+                } else {
+                    T::zero()
+                });
             }
         }
         Graph::from(matrix)
