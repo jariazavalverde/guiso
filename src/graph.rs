@@ -90,8 +90,8 @@ impl<T> Graph<T> {
         T: identity::AddIdentity<T>,
         T: identity::MulIdentity<T>,
     {
-        let vertices: usize = combinatorics::binomial(n as u64, k as u64) as usize;
-        let pow: usize = 2u32.pow(n as u32) as usize;
+        let vertices: usize = combinatorics::binomial(n, k);
+        let pow: usize = 2usize.pow(n as u32);
         let k1: u32 = (k - 1) as u32;
         let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
         let k_one_elems: Vec<usize> = (0..pow)
