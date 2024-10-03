@@ -34,7 +34,7 @@ impl<T> Poly<T> {
         T: PartialEq<T>,
         T: identity::AddIdentity<T>,
     {
-        if coefficient == T::zero() {
+        if identity::is_eq_zero(&coefficient) {
             panic!("Coefficient of the monomial must be non-zero.");
         }
         let mut coeff: Vec<T> = Vec::with_capacity(order + 1);

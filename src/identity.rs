@@ -59,3 +59,57 @@ macro_rules! mul_identity_impl {
 mul_identity_impl! {
     usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f32 f64
 }
+
+#[inline(always)]
+pub fn is_lt_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialOrd<T>,
+{
+    n < &T::zero()
+}
+
+#[inline(always)]
+pub fn is_le_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialOrd<T>,
+{
+    n <= &T::zero()
+}
+
+#[inline(always)]
+pub fn is_gt_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialOrd<T>,
+{
+    n > &T::zero()
+}
+
+#[inline(always)]
+pub fn is_ge_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialOrd<T>,
+{
+    n >= &T::zero()
+}
+
+#[inline(always)]
+pub fn is_eq_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialEq<T>,
+{
+    n == &T::zero()
+}
+
+#[inline(always)]
+pub fn is_ne_zero<T>(n: &T) -> bool
+where
+    T: AddIdentity<T>,
+    T: PartialEq<T>,
+{
+    n != &T::zero()
+}

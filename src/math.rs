@@ -1,4 +1,4 @@
-use crate::identity::{AddIdentity, MulIdentity};
+use crate::identity::{self, AddIdentity, MulIdentity};
 use std::ops;
 
 /// Computes the factorial of a number.
@@ -20,7 +20,7 @@ where
     T: ops::Add<T, Output = T>,
     T: ops::Mul<T, Output = T>,
 {
-    if n < T::zero() {
+    if identity::is_lt_zero(&n) {
         panic!("Number must be non-negative.");
     }
     let mut factorial: T = T::one();
@@ -34,7 +34,7 @@ where
 
 pub mod combinatorics {
 
-    use crate::identity::{AddIdentity, MulIdentity};
+    use crate::identity::{self, AddIdentity, MulIdentity};
     use std::ops;
 
     /// Computes the binomial coefficient C(n,k).
@@ -61,10 +61,10 @@ pub mod combinatorics {
         if n < k {
             panic!("n must be greater than k.");
         }
-        if n < T::zero() {
+        if identity::is_lt_zero(&n) {
             panic!("n must be greater than 0.");
         }
-        if k < T::zero() {
+        if identity::is_lt_zero(&k) {
             panic!("k must be greater than 0.");
         }
         super::factorial(n.clone())
