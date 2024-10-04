@@ -27,7 +27,7 @@ where
     let mut m: T = T::one();
     while m <= n {
         factorial = factorial * m.clone();
-        m = m + T::one();
+        m = identity::succ(m);
     }
     factorial
 }
@@ -62,10 +62,10 @@ pub mod combinatorics {
             panic!("n must be greater than k.");
         }
         if identity::is_lt_zero(&n) {
-            panic!("n must be greater than 0.");
+            panic!("n must be non-negative.");
         }
         if identity::is_lt_zero(&k) {
-            panic!("k must be greater than 0.");
+            panic!("k must be non-negative.");
         }
         super::factorial(n.clone())
             / (super::factorial(k.clone()) * super::factorial(n.clone() - k.clone()))

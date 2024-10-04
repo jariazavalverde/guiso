@@ -1,3 +1,5 @@
+use std::ops;
+
 /// Used for numeric types with additive identity.
 ///
 /// # Examples
@@ -112,4 +114,22 @@ where
     T: PartialEq<T>,
 {
     n != &T::zero()
+}
+
+#[inline(always)]
+pub fn succ<T>(n: T) -> T
+where
+    T: MulIdentity<T>,
+    T: ops::Add<T, Output = T>,
+{
+    n + T::one()
+}
+
+#[inline(always)]
+pub fn pred<T>(n: T) -> T
+where
+    T: MulIdentity<T>,
+    T: ops::Sub<T, Output = T>,
+{
+    n - T::one()
 }
