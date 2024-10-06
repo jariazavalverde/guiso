@@ -140,6 +140,40 @@ impl<T> Graph<T> {
         &self.matrix
     }
 
+    /// Returns the complement of a graph.
+    ///
+    /// The complement of a graph is a graph on the same vertices such that two distinct vertices are adjacent
+    /// if and only if they are not adjacent in the original graph.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use guiso::graph::Graph;
+    ///
+    /// let k3: Graph<i32> = Graph::complete(3);
+    /// k3.complement();
+    /// ```
+    pub fn complement(&self) -> Graph<T>
+    where
+        T: PartialEq<T>,
+        T: identity::AddIdentity<T>,
+        T: identity::MulIdentity<T>,
+    {
+        let vertices: usize = self.vertices();
+        let zero: T = T::zero();
+        let mut matrix: Vec<T> = Vec::with_capacity(vertices * vertices);
+        for i in 0..vertices {
+            for j in 0..vertices {
+                matrix.push(if i != j && self[(i, j)] == zero {
+                    T::one()
+                } else {
+                    T::zero()
+                })
+            }
+        }
+        Graph::from(matrix)
+    }
+
     /// Checks whether two graphs are isospectral.
     ///
     /// Two graphs are considered isospectral if their adjacency matrices share the same set of eigenvalues,
